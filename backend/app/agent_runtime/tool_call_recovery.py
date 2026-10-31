@@ -19,7 +19,7 @@ TRUNCATED_TOOL_CALL_MESSAGE = (
     "如需单次写入更长内容，请在模型设置中调大 Max Tokens"
 )
 
-# Anthropic: stop_reason=max_tokens；OpenAI 兼容: finish_reason=length；Gemini: MAX_TOKENS
+# Anthropic: stop_reason=max_tokens; OpenAI-compatible: finish_reason=length; Gemini: MAX_TOKENS
 _TRUNCATION_STOP_REASONS = ("max_tokens", "length", "MAX_TOKENS")
 
 
@@ -234,8 +234,9 @@ def _recover_one_tool_call(
         )
 
     raw_args = raw_tool_call.get("args") if args_value is None else args_value
-    # 截断的参数即使能被 json_repair 补全也不可信：缺字段会被误报为参数缺失，
-    # 补全的半截字符串则会被当作完整内容写入。
+    # Truncated args are untrustworthy even when json_repair can close them: a missing
+    # field surfaces as a misleading validation error, and a cut-off string would be
+    # written as if it were complete content.
     args = None if truncated else parse_tool_args(raw_args)
     if args is None:
         args = _malformed_args_payload(raw_args, truncated=truncated)
